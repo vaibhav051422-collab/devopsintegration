@@ -18,6 +18,8 @@ export const metadataAPI = {
   saveMetadata: (data) => api.post('/metadata', data),
 
   getAll: () => api.get('/metadata'),
+
+  deleteById: (id) => api.delete(`/metadata/${id}`),
 };
 
 // Helper to get the fast-access URL via Nginx /storage

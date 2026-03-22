@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { metadataAPI, getStorageUrl } from './api';
-import { Upload, FileText, ExternalLink } from 'lucide-react';
+import { Upload, ExternalLink, Trash2 } from 'lucide-react';
 
 function App() {
   const [files, setFiles] = useState([]);
@@ -12,6 +12,16 @@ function App() {
   };
 
   useEffect(() => { fetchFiles(); }, []);
+
+  const handleDelete = async (id) => {
+    try {
+      await metadataAPI.deleteById(id);
+      fetchFiles();
+    } catch (err) {
+      console.error(err);
+      alert('Delete failed.');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,6 +67,14 @@ function App() {
             <a href={getStorageUrl(f.filePath)} target="_blank" rel="noreferrer">
                View File via Nginx <ExternalLink size={14} />
             </a>
+            <br /><br />
+            <button
+              type="button"
+              onClick={() => handleDelete(f._id)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Trash2 size={14} /> Delete
+            </button>
           </div>
         ))}
       </div>

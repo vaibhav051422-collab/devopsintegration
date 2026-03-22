@@ -51,6 +51,35 @@ app.get('/metadata', async (req, res) => {
     }
 });
 
+app.delete('/metadata/:id', async (req, res) => {
+    try {
+        const record = await Metadata.findById(req.params.id);
+
+        if (!record) {
+            return res.status(404).json({ error: 'Record not found' });
+        }
+
+        // filePath is expected in format: /uploads/<filename>
+        const filePath = record.filePath || '';
+        const pathParts = filePath.split('/').filter(Boolean);
+        const bucketName = pathParts[0];
+        const fileName = pathParts.slice(1).join('/');
+
+        if (bucketName && fileName) {
+            try {
+                await minioClient.removeObject(bucketName, fileName);
+            } catch (error) {
+                // Continue deleting metadata even if file was already removed.
+            }
+        }
+
+        await Metadata.findByIdAndDelete(req.params.id);
+        res.status(200).json({ message: 'Metadata and file deleted' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 
 
 app.post('/upload-file', upload.single('file'), async (req, res) => {
@@ -101,4 +130,9 @@ const startServer = async () => {
     }
 };
 
-startServer();
+// Only start server if this file is run directly, not when imported for testing
+if (import.meta.url === `file://${process.argv[1]}`) {
+    startServer();
+}
+
+export default app;
