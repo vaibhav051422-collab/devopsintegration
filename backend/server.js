@@ -26,12 +26,12 @@ const minioClient = new Minio.Client({
     secretKey: process.env.MINIO_ROOT_PASSWORD || 'password123'
 });
 
-app.get('/api/health', (req, res) => {
+app.get('/health', (req, res) => {
     res.json({ status: 'ok' });
 });
 
 
-app.post('/api/metadata', async (req, res) => {
+app.post('/metadata', async (req, res) => {
     try {
         const newMetadata = new Metadata(req.body);
         await newMetadata.save();
@@ -42,7 +42,7 @@ app.post('/api/metadata', async (req, res) => {
 });
 
 
-app.get('/api/metadata', async (req, res) => {
+app.get('/metadata', async (req, res) => {
     try {
         const data = await Metadata.find({});
         res.status(200).json(data);
@@ -53,7 +53,7 @@ app.get('/api/metadata', async (req, res) => {
 
 
 
-app.post('/api/upload-file', upload.single('file'), async (req, res) => {
+app.post('/upload-file', upload.single('file'), async (req, res) => {
     try {
         const bucketName = 'uploads';
         const fileName = `${Date.now()}-${req.file.originalname}`;
@@ -75,7 +75,7 @@ app.post('/api/upload-file', upload.single('file'), async (req, res) => {
 });
 
 
-app.get('/api/get-file', async (req, res) => {
+app.get('/get-file', async (req, res) => {
     try {
         const { name } = req.query; // Expects ?name=filename
         const stream = await minioClient.getObject('uploads', name);
