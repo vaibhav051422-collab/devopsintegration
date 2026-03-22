@@ -1,4 +1,3 @@
-// Replace the 'import' line with this:
 const request = require('supertest');
 
 const API_URL = 'http://localhost'; 
