@@ -69,7 +69,7 @@ app.delete('/metadata/:id', async (req, res) => {
             try {
                 await minioClient.removeObject(bucketName, fileName);
             } catch (error) {
-                // Continue deleting metadata even if file was already removed.
+ 
             }
         }
 

@@ -37,7 +37,7 @@ describe('IIT Patna Infrastructure Integration Test', () => {
   }, 10000);
 
   afterAll(async () => {
-    // Cleanup: disconnect MongoDB after tests
+    
     try {
       if (mongoose.connection.readyState !== 0) {
         await mongoose.disconnect();
@@ -48,14 +48,14 @@ describe('IIT Patna Infrastructure Integration Test', () => {
     }
   });
 
-  // 1. Health Check Test
+  
   test('should return health status ok', async () => {
     const res = await request(app).get('/health');
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('status', 'ok');
   });
 
-  // 2. Metadata API Test
+  
   test('should create metadata in MongoDB', async () => {
     if (!dbConnected) {
       console.warn('Skipping DB metadata create test because MongoDB is not reachable.');
@@ -77,7 +77,7 @@ describe('IIT Patna Infrastructure Integration Test', () => {
     expect(res.body).toHaveProperty('_id');
   });
 
-  // 3. Get Metadata Test
+ 
   test('should retrieve all metadata records', async () => {
     if (!dbConnected) {
       console.warn('Skipping DB metadata read test because MongoDB is not reachable.');
@@ -89,11 +89,10 @@ describe('IIT Patna Infrastructure Integration Test', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
-  // 4. Upload File Endpoint Test
+ 
   test('should have /upload-file endpoint available', async () => {
     const res = await request(app).post('/upload-file');
-    // Expect an error since we're not sending a file, but the endpoint should exist (not 404)
-    expect(res.status).not.toBe(404);
+   expect(res.status).not.toBe(404);
   });
 
 });

@@ -16,13 +16,11 @@ services:
       context: ./backend
       dockerfile: dockerfile
     environment:
-      
-      - MONGO_URL=mongodb://db:27017/metadata_db
-      - MINIO_ENDPOINT=minio
-      - MINIO_PORT=9000
-      
-      - MINIO_ROOT_USER=admin
-      - MINIO_ROOT_PASSWORD=password123
+      - MONGO_URL=${MONGO_URL}
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
+      - MINIO_PORT=${MINIO_PORT}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     depends_on:
       - db
       - minio
@@ -45,8 +43,8 @@ services:
   minio:
     image: minio/minio
     environment:
-      - MINIO_ROOT_USER=admin
-      - MINIO_ROOT_PASSWORD=password123
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     
     command: server /data --console-address ":9001"
     networks:
