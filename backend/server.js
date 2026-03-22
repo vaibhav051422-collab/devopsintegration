@@ -62,7 +62,7 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
         const exists = await minioClient.bucketExists(bucketName);
         if (!exists) await minioClient.makeBucket(bucketName);
 
-      
+      //minioClient.putObject(...) takes that Buffer from Multer and streams it into the MinIO container.
         await minioClient.putObject(bucketName, fileName, req.file.buffer);
 
         res.status(200).json({ 
@@ -79,6 +79,7 @@ app.get('/get-file', async (req, res) => {
     try {
         const { name } = req.query; // Expects ?name=filename
         const stream = await minioClient.getObject('uploads', name);
+        // backend here just streams the file from MinIO to the client without loading it all into memory, making it efficient for large files.
         stream.pipe(res); 
     } catch (error) {
         res.status(404).json({ error: "File not found" });
