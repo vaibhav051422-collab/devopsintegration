@@ -67,7 +67,7 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
 
         res.status(200).json({ 
             message: 'File uploaded', 
-            filePath: `/${bucketName}/${fileName}` // This is stored in Metadata later [cite: 28]
+            filePath: `/${bucketName}/${fileName}` 
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -79,7 +79,7 @@ app.get('/get-file', async (req, res) => {
     try {
         const { name } = req.query; // Expects ?name=filename
         const stream = await minioClient.getObject('uploads', name);
-        stream.pipe(res); // Streams the file back to the client [cite: 38]
+        stream.pipe(res); 
     } catch (error) {
         res.status(404).json({ error: "File not found" });
     }
