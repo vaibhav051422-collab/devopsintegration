@@ -1,19 +1,40 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
+import dns from 'node:dns/promises';
 import app from './server.js';
 
-describe('IIT Patna Infrastructure Integration Test', () => {
+describe(' Integration Test', () => {
   let dbConnected = false;
+  const strictIntegration = process.env.STRICT_INTEGRATION === 'true';
+
+  const canResolveMongoHost = async (mongoUrl) => {
+    try {
+      const { hostname } = new URL(mongoUrl);
+      if (!hostname || hostname === 'localhost' || hostname === '127.0.0.1') {
+        return true;
+      }
+      await dns.lookup(hostname);
+      return true;
+    } catch {
+      return false;
+    }
+  };
   
   beforeAll(async () => {
-    // Prefer local MongoDB for host runs; docker hostname can be tried as fallback.
     const mongoCandidates = [
-      'mongodb://localhost:27017/test_db',
       process.env.MONGO_URL,
+      'mongodb://db:27017/metadata_db',
+      'mongodb://localhost:27017/test_db',
     ].filter((value, index, self) => Boolean(value) && self.indexOf(value) === index);
 
     for (const mongoUrl of mongoCandidates) {
       try {
+        const hostResolvable = await canResolveMongoHost(mongoUrl);
+        if (!hostResolvable) {
+          console.warn(`Skipping MongoDB candidate because host is not resolvable: ${mongoUrl}`);
+          continue;
+        }
+
         if (mongoose.connection.readyState !== 0) {
           await mongoose.disconnect();
         }
@@ -28,18 +49,28 @@ describe('IIT Patna Infrastructure Integration Test', () => {
         break;
       } catch (error) {
         console.warn(`MongoDB connection attempt failed for ${mongoUrl}: ${error.message}`);
+        try {
+          await mongoose.disconnect();
+        } catch {
+          // Best-effort cleanup between connection attempts.
+        }
       }
     }
 
     if (!dbConnected) {
-      console.warn('MongoDB unavailable. DB-dependent integration checks will be skipped.');
+      const message = 'MongoDB unavailable. Start the stack with docker compose up -d --build, or run with STRICT_INTEGRATION=false for local checks.';
+      if (strictIntegration) {
+        throw new Error(message);
+      }
+      console.warn(message);
     }
   }, 10000);
 
   afterAll(async () => {
     
     try {
-      if (mongoose.connection.readyState !== 0) {
+      if (mongoose.connection.readyState !== 0 || dbConnected) {
+        await mongoose.connection.close();
         await mongoose.disconnect();
         console.log('Disconnected from MongoDB');
       }

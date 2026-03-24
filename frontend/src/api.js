@@ -22,9 +22,11 @@ export const metadataAPI = {
   deleteById: (id) => api.delete(`/metadata/${id}`),
 };
 
-// Helper to get the fast-access URL via Nginx /storage
+// Helper to build a secure file-view URL via backend proxy endpoint
 export const getStorageUrl = (filePath) => {
-  // filePath comes back as '/uploads/filename.jpg'
-  // We prepend '/storage' so Nginx routes it to MinIO
-  return `/storage${filePath}`;
+  // filePath comes back as '/uploads/<filename>'
+  // Use backend streaming endpoint so MinIO credentials stay server-side.
+  const normalizedPath = String(filePath || '').trim();
+  const objectName = normalizedPath.replace(/^\/?uploads\//, '');
+  return `/api/get-file?name=${encodeURIComponent(objectName)}`;
 };

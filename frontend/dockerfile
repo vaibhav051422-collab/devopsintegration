@@ -10,8 +10,10 @@ RUN npm install
 # Copyproject
 COPY . .
 
+RUN npm run build
+
 # port
 EXPOSE 5173
 
 # Start cmd
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "5173"]
