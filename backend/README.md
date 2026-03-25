@@ -8,7 +8,7 @@ flowchart LR
 	C[Client via Nginx /api] --> A[Express Backend]
 	A -->|metadata create/read/delete| M[(MongoDB)]
 	A -->|upload/get/remove object| O[(MinIO uploads bucket)]
-	O -->|served by proxy| S[/storage/uploads/...]
+	O -->|served by proxy| S["/storage/uploads/..."]
 ```
 
 ## Responsibilities

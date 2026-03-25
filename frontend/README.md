@@ -14,7 +14,7 @@ The UI allows users to:
 flowchart LR
 	U[User] --> F[React UI]
 	F -->|axios /api| B[Backend API]
-	F -->|open file link| G[/api/get-file]
+	F -->|open file link| G["/api/get-file"]
 	B --> M[(MongoDB)]
 	B --> O[(MinIO)]
 ```
@@ -22,8 +22,8 @@ flowchart LR
 ## Screens and Actions Figure
 ```mermaid
 flowchart TD
-	A[Upload Form] -->|submit file| B[/api/upload-file]
-	B --> C[/api/metadata create]
+	A[Upload Form] -->|submit file| B["/api/upload-file"]
+	B --> C["/api/metadata create"]
 	C --> D[Record Card appears in list]
 	D --> E[View action opens file]
 	D --> F[Delete action removes metadata and object]
