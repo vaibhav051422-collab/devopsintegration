@@ -1,16 +1,68 @@
-# React + Vite
+# Frontend Service
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite client for the infrastructure challenge.
 
-Currently, two official plugins are available:
+The UI allows users to:
+- upload files
+- save metadata records
+- list all stored records
+- open files in a new tab
+- delete records and associated objects
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## UI Architecture Figure
+```mermaid
+flowchart LR
+	U[User] --> F[React UI]
+	F -->|axios /api| B[Backend API]
+	F -->|open file link| G[/api/get-file]
+	B --> M[(MongoDB)]
+	B --> O[(MinIO)]
+```
 
-## React Compiler
+## Screens and Actions Figure
+```mermaid
+flowchart TD
+	A[Upload Form] -->|submit file| B[/api/upload-file]
+	B --> C[/api/metadata create]
+	C --> D[Record Card appears in list]
+	D --> E[View action opens file]
+	D --> F[Delete action removes metadata and object]
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Local Development
+Install dependencies:
 
-## Expanding the ESLint configuration
+```bash
+npm install
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Run dev server:
+
+```bash
+npm run dev
+```
+
+Build production assets:
+
+```bash
+npm run build
+```
+
+Preview production build:
+
+```bash
+npm run preview
+```
+
+Lint:
+
+```bash
+npm run lint
+```
+
+## Runtime Notes
+- API base URL is `/api` (proxy-routed by Nginx in Docker setup)
+- File preview URLs are generated through backend endpoint `/api/get-file?name=<objectName>`
+
+## Docker
+In Compose mode, this service is built from the frontend Dockerfile and served by Vite preview on port 5173 internally.

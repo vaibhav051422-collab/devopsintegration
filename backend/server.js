@@ -26,6 +26,36 @@ const minioClient = new Minio.Client({
     secretKey: process.env.MINIO_ROOT_PASSWORD || 'password123'
 });
 
+const ensurePublicUploadsBucket = async () => {
+    const bucketName = 'uploads';
+    const exists = await minioClient.bucketExists(bucketName);
+
+    if (!exists) {
+        await minioClient.makeBucket(bucketName);
+    }
+
+    // Allow read-only object access through the /storage proxy path.
+    const publicReadPolicy = JSON.stringify({
+        Version: '2012-10-17',
+        Statement: [
+            {
+                Effect: 'Allow',
+                Principal: { AWS: ['*'] },
+                Action: ['s3:ListBucket'],
+                Resource: [`arn:aws:s3:::${bucketName}`]
+            },
+            {
+                Effect: 'Allow',
+                Principal: { AWS: ['*'] },
+                Action: ['s3:GetObject'],
+                Resource: [`arn:aws:s3:::${bucketName}/*`]
+            }
+        ]
+    });
+
+    await minioClient.setBucketPolicy(bucketName, publicReadPolicy);
+};
+
 app.get('/health', (req, res) => {
     res.json({ status: 'ok' });
 });
@@ -59,7 +89,7 @@ app.delete('/metadata/:id', async (req, res) => {
             return res.status(404).json({ error: 'Record not found' });
         }
 
-        // filePath is expected in format: /uploads/<filename>
+     
         const filePath = record.filePath || '';
         const pathParts = filePath.split('/').filter(Boolean);
         const bucketName = pathParts[0];
@@ -87,9 +117,7 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
         const bucketName = 'uploads';
         const fileName = `${Date.now()}-${req.file.originalname}`;
 
-      
-        const exists = await minioClient.bucketExists(bucketName);
-        if (!exists) await minioClient.makeBucket(bucketName);
+                await ensurePublicUploadsBucket();
 
       //minioClient.putObject(...) takes that Buffer from Multer and streams it into the MinIO container.
         await minioClient.putObject(bucketName, fileName, req.file.buffer);
@@ -106,7 +134,7 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
 
 app.get('/get-file', async (req, res) => {
     try {
-        const { name } = req.query; // Expects ?name=filename
+        const { name } = req.query; 
         const stream = await minioClient.getObject('uploads', name);
         // backend here just streams the file from MinIO to the client without loading it all into memory, making it efficient for large files.
         stream.pipe(res); 
